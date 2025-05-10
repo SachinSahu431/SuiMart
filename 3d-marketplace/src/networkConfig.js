@@ -1,10 +1,10 @@
+import { createNetworkConfig } from "@mysten/dapp-kit";
 import { getFullnodeUrl } from "@mysten/sui/client";
 import {
   DEVNET_MARKETPLACE_PACKAGE_ID,
-  TESTNET_MARKETPLACE_PACKAGE_ID,
   MAINNET_MARKETPLACE_PACKAGE_ID,
+  TESTNET_MARKETPLACE_PACKAGE_ID,
 } from "./constants.js";
-import { createNetworkConfig } from "@mysten/dapp-kit";
 
 const { networkConfig, useNetworkVariable, useNetworkVariables } =
   createNetworkConfig({
@@ -28,4 +28,4 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
     },
   });
 
-export { useNetworkVariable, useNetworkVariables, networkConfig };
+export { networkConfig, useNetworkVariable, useNetworkVariables };

@@ -1,9 +1,9 @@
-import * as THREE from "three"
 import * as RAPIER from "@dimforge/rapier3d-compat"
+import { useKeyboardControls } from "@react-three/drei"
+import { useFrame, useThree } from "@react-three/fiber"
+import { CapsuleCollider, RigidBody, useRapier } from "@react-three/rapier"
 import { useRef } from "react"
-import { useThree, useFrame } from "@react-three/fiber"
-import { useKeyboardControls  } from "@react-three/drei"
-import { CapsuleCollider , RigidBody, useRapier } from "@react-three/rapier"
+import * as THREE from "three"
 
 const SPEED = 10
 const direction = new THREE.Vector3()

@@ -3,29 +3,29 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber"
 import { Physics, RigidBody } from "@react-three/rapier"
 import { Suspense, useEffect, useRef, useState } from "react"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
-import { Player } from "./Player.js"
+
 import { useSharedState } from "./sharedState.js"
+import { Player } from "./Player.js"
 import { Model } from "./Show2.jsx"
 
+// SUI Imports
 import { Transaction } from "@mysten/sui/transactions"
+import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
+import { useNetworkVariable } from "./networkConfig.js"
 import { fetchMarketplaceDynamicObject } from "./SUIFunctions.js"
 
-import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
-import { useNetworkVariable } from "./networkConfig.js"
-// Controls: WASD + left click
-
+// Pinata
 const pinataGatewayToken = process.env.REACT_APP_PINATA_GATEWAY_TOKEN
 const ProductModel = ({ file }) => {
-  console.log(file, "file")
+  console.log("Pinata File: ", file)
   const modelUrl = `${file}?pinataGatewayToken=${pinataGatewayToken}`
   const gltf = useLoader(GLTFLoader, modelUrl)
-  console.log(gltf, "gltf")
+  console.log("GLTF Model: ", gltf)
   return <primitive object={gltf.scene} scale={10} />
 }
 
-function EquidistantPoints({ contract, products, buyProduct }) {
+function EquidistantPoints({ products, buyProduct }) {
   const { setPrice, setText, setDesc } = useSharedState()
-  console.log(contract, "Marketplace")
   console.log(products, "products")
 
   const points = []
@@ -71,15 +71,14 @@ function EquidistantMesh({ position, index, product, buyProduct, clear }) {
     <mesh
       position={position}
       ref={ref}
-      onPointerEnter={(e) => {
+      onPointerEnter={() => {
         setPrice(product.price)
         setText(product.name)
         setDesc(product.description)
       }}
-      onPointerLeave={(e) => clear()}
-      onClick={async (e) => {
-        const productPrice = product.price // Assuming price is in Ether
-        console.log("Buying product", index)
+      onPointerLeave={() => clear()}
+      onClick={async () => {
+        console.log("Clicked on product(index:", index)
         setDesc("Buying...")
         buyProduct(index)
       }}>
@@ -91,9 +90,13 @@ function EquidistantMesh({ position, index, product, buyProduct, clear }) {
 }
 
 export default function App() {
-  const currentAccount = useCurrentAccount()
+  const client = useSuiClient() 
+  const suiMartPackageId = useNetworkVariable("suiMartPackageId")
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction()
+
   const queryParams = new URLSearchParams(window.location.search)
   const address = queryParams.get("market") || "loading..."
+
   let hours = 12 + new Date().getHours()
   // hours = 12
   let namecolor = "white"
@@ -108,40 +111,28 @@ export default function App() {
 
   const sunPosition = [x, y, z]
 
-  const [marketContract, setMarketContract] = useState(null)
   const [marketname, setMarketName] = useState("loading...")
   const [products, setProducts] = useState([])
   const [marketdesc, setMarketDesc] = useState("loading...")
 
-  const client = useSuiClient()
-  const suiMartPackageId = useNetworkVariable("suiMartPackageId")
-  const { mutate: signAndExecute, isSuccess, isPending } = useSignAndExecuteTransaction()
-
   const marketplaceId = address
+
   const buyProduct = async (selectedID) => {
     const marketplaceDynamicObject = await client.getObject({
       id: marketplaceId,
       options: { showType: true, showContent: true },
     })
 
-    console.log("Marketplace Dynamic Object:", marketplaceDynamicObject)
-
     const marketplaceValue = marketplaceDynamicObject.data?.content?.fields?.value
-    console.log("Buy Product")
-    console.log("Marketplace ID:", marketplaceValue)
-
-    console.log("Payment Details: (ALLLLL)", marketplaceValue, selectedID, products[selectedID].price)
     const tx = new Transaction()
     const payment = tx.splitCoins(tx.gas, [tx.pure.u64(products[selectedID].price)])
     tx.setGasBudget(10000000)
 
-    console.log("Payment Details: ", marketplaceValue, selectedID, 1, payment)
     tx.moveCall({
       arguments: [tx.object(marketplaceValue), tx.pure.u64(selectedID), tx.pure.u64(1), payment],
       target: `${suiMartPackageId}::marketplace::buy_product`,
     })
 
-    console.log("Transaction: ", tx)
 
     signAndExecute(
       {
@@ -175,7 +166,7 @@ export default function App() {
     console.log("Fetched products:", res.data.content.fields.products)
     res.data.content.fields.products.forEach((p, i) => console.log(i, "fields.ipfs_link:", p.fields.ipfs_link))
 
-    let mappedProducts = fProducts.map((p, i) => {
+    let mappedProducts = fProducts.map((p) => {
       return {
         name: p.fields.name,
         description: p.fields.description,
@@ -184,6 +175,7 @@ export default function App() {
         ipfs_link: p.fields.ipfs_link,
       }
     })
+    
     setProducts(mappedProducts)
   }
 
@@ -193,7 +185,6 @@ export default function App() {
     } else {
       console.error("marketplaceId is not defined")
     }
-
   }, [marketplaceId])
 
   return (
@@ -227,7 +218,7 @@ export default function App() {
               <Model />
               <Player />
               <Suspense fallback={<Html center>Loading models…</Html>}>
-                <EquidistantPoints products={products} contract={marketContract} buyProduct={buyProduct} />
+                <EquidistantPoints products={products} buyProduct={buyProduct} />
               </Suspense>
 
               {/* <Debug/> */}

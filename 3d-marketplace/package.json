@@ -1,6 +1,7 @@
 {
-  "name": "MetaMarket",
+  "name": "sui-marketplace",
   "version": "0.1.0",
+  "description": "A 3D marketplace for Sui",
   "private": true,
   "dependencies": {
     "@mysten/dapp-kit": "^0.16.2",
@@ -42,5 +43,4 @@
     ]
   },
   "keywords": [],
-  "description": "3d."
 }

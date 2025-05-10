@@ -1,17 +1,15 @@
-import React from "react"
-import ReactDOM from "react-dom/client"
 import { ConnectButton, SuiClientProvider, WalletProvider } from "@mysten/dapp-kit"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import React from "react"
+import ReactDOM from "react-dom/client"
 import { networkConfig } from "./networkConfig.js"
 
-import App from "./App.js"
-import { useSharedState } from "./sharedState.js"
-import { SharedStateProvider } from "./sharedState.js"
 import "@mysten/dapp-kit/dist/index.css"
+import App from "./App.js"
+import { SharedStateProvider, useSharedState } from "./sharedState.js"
 import "./styles.css"
 
 function Overlay() {
-  // const { text, desc, price, user } = useSharedState()
   const { text, setText, desc, setDesc, price, setPrice, user, setUser } = useSharedState()
 
   return (
