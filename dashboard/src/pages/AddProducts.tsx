@@ -5,6 +5,13 @@ import axios from 'axios';
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
 import { useNetworkVariable } from '../networkConfig';
+import { PinataSDK } from 'pinata';
+
+const pinata = new PinataSDK({
+  pinataJwt: import.meta.env.VITE_PINATA_JWT,
+  pinataGateway: import.meta.env.VITE_GATEWAY_URL,
+});
+
 
 const AddProducts = (props) => {
   const client = useSuiClient();
@@ -74,46 +81,45 @@ const AddProducts = (props) => {
   const [ipfsLink, setIpfsLink] = useState('');
 
   const handleFileUpload = async (e) => {
-    try {
-      const file = e.target.files[0];
-      setGlbFile(file);
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-      const formData = new FormData();
-      formData.append('file', file);
+  setGlbFile(file);
 
-      const pinataMetadata = JSON.stringify({
-        name: file.name,
-      });
-      formData.append('pinataMetadata', pinataMetadata);
+  try {
+    // 1. Get a fresh presigned URL
+    const resp = await fetch(
+      `${import.meta.env.VITE_SERVER_URL}/presigned_url?ts=${Date.now()}`,
+      { cache: 'no-store' }
+    );
+    console.log(resp);
 
-      const pinataOptions = JSON.stringify({
-        cidVersion: 0,
-      });
-      formData.append('pinataOptions', pinataOptions);
-
-      const JWT = process.env.PINATA_JWT;
-
-      const res = await axios.post(
-        'https://api.pinata.cloud/pinning/pinFileToIPFS',
-        formData,
-        {
-          maxBodyLength: 'Infinity',
-          headers: {
-            'Content-Type': `multipart/form-data; boundary=${formData._boundary}`,
-            Authorization: `Bearer ${JWT}`,
-          },
-        },
-      );
-
-      if (res.data && res.data.IpfsHash) {
-        setIpfsLink(`https://gateway.pinata.cloud/ipfs/${res.data.IpfsHash}`);
-      } else {
-        console.error('Failed to get IPFS link');
-      }
-    } catch (error) {
-      console.error('Error uploading file to Pinata:', error);
+    if (!resp.ok) {
+      throw new Error(`Server returned ${resp.status}`);
     }
-  };
+    const { url } = await resp.json();
+console.log(url);
+    // 2. Upload via Pinata SDK
+    const upload = await pinata
+      .upload
+      .public
+      .file(file)
+      .url(url);
+
+    // 3. Convert CID → gateway link
+    if (upload.cid) {
+      const link = await pinata.gateways.public.convert(upload.cid);
+      setIpfsLink(link);
+      fireToast('success', 'File uploaded to IPFS!');
+    } else {
+      throw new Error('No CID returned from Pinata');
+    }
+
+  } catch (error) {
+    console.error('Error uploading file to Pinata:', error);
+    fireToast('error', 'Upload failed; see console for details.');
+  }
+};
 
   const addProduct = async (e) => {
     e.preventDefault();
@@ -235,7 +241,7 @@ const AddProducts = (props) => {
                     </label>
                     {glbFile && (
                       <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                        Selected: {glbFile}
+                        Selected: {glbFile.name}
                       </p>
                     )}
                     <input

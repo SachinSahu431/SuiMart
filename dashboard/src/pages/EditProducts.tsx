@@ -107,7 +107,7 @@ const EditProducts = (props) => {
       setDescription(selected.fields.description || '');
       setPrice(selected.fields.price);
       setQuantity(selected.fields.quantity);
-      setIpfsLink(selected.fields.ipfsLink || '');
+      setIpfsLink(selected.fields.ipfs_link || '');
     }
     else {
       setSelectedProduct(null);

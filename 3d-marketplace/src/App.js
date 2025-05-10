@@ -12,6 +12,8 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
 import { useLoader } from "@react-three/fiber"
 import { BigNumber } from "ethers"
 import { useRef } from "react"
+import { Html } from "@react-three/drei";
+
 
 import { fetchMarketplaceDynamicObject } from "./SUIFunctions.js"
 import { Transaction } from '@mysten/sui/transactions';
@@ -34,6 +36,7 @@ const ProductModel = ({ file }) => {
 function EquidistantPoints({ contract, products }) {
   const { setPrice, setText, setDesc } = useSharedState()
   console.log(contract, "Marketplace")
+  console.log(products, "products")
 
   const points = []
   const numPoints = products.length
@@ -200,6 +203,10 @@ export default function App() {
     console.log("Marketplace dynamic object response:", res);
     console.log("Marketplace dynamic object fields:", res?.data?.content?.fields);
 
+    console.log("Fetched products:", res.data.content.fields.products);
+    res.data.content.fields.products.forEach((p, i) =>
+      console.log(i, "fields.ipfs_link:", p.fields.ipfs_link)
+    );
     setProducts(fProducts);
   };
 
@@ -241,7 +248,10 @@ export default function App() {
             <Physics>
               <Model />
               <Player />
-              <EquidistantPoints products={products} contract={marketContract} />
+              <Suspense fallback={<Html center>Loading models…</Html>}>
+                <EquidistantPoints products={products} contract={marketContract} />
+              </Suspense>
+
               {/* <Debug/> */}
             </Physics>
 

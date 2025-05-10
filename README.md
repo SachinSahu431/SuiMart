@@ -32,16 +32,36 @@ PRIVATE_KEY=<your_wallet_private_key>
   npx hardhat run scripts/deploy.js --network testnet
 ```
 
-### Dashboard
+### Dashboard - Vite Client
 
-Create an environment file and provide it with Pinata JWt
+Create an environment file `.env.local` and provide it with Pinata JWT details [here](https://docs.pinata.cloud/frameworks/react#start-up-react-project).
+
 
 ```
-PINATA_JWT=<your_pinata_jwt>
+VITE_SERVER_URL=http://localhost:8787     # your backend endpoint for pinata server
+VITE_GATEWAY_URL=<mydomain>.mypinata.cloud
 ```
+
+Run the Vite client:
 
 ```bash
   cd Dashboard
+  npm i
+  npm run dev
+```
+
+### Dashboard - Pinata Server
+
+Create `.dev.vars` and insert these values:
+
+```
+PINATA_JWT=<your_jwt_token>
+GATEWAY_URL=<mydomain>.mypinata.cloud
+```
+
+And start the Hono server:
+```bash
+  cd pinata-server
   npm i
   npm run dev
 ```
