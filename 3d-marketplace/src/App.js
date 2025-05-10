@@ -1,42 +1,29 @@
-import { Canvas, useFrame } from "@react-three/fiber"
-import { Loader, PointerLockControls, KeyboardControls, Text, PresentationControls, Stars } from "@react-three/drei"
-import { Debug, Physics, RigidBody } from "@react-three/rapier"
-import { Player } from "./Player.js"
-import { Model } from "./Show2.jsx"
-import { Suspense, useEffect } from "react"
-import { Billboard } from "@react-three/drei"
-import { Sky } from "@react-three/drei"
-import { useState } from "react"
-import { useSharedState } from "./sharedState.js"
+import { Billboard, Html, KeyboardControls, Loader, PointerLockControls, PresentationControls, Sky, Stars, Text } from "@react-three/drei"
+import { Canvas, useFrame, useLoader } from "@react-three/fiber"
+import { Physics, RigidBody } from "@react-three/rapier"
+import { Suspense, useEffect, useRef, useState } from "react"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
-import { useLoader } from "@react-three/fiber"
-import { BigNumber } from "ethers"
-import { useRef } from "react"
-import { Html } from "@react-three/drei";
+import { Player } from "./Player.js"
+import { useSharedState } from "./sharedState.js"
+import { Model } from "./Show2.jsx"
 
-
+import { Transaction } from "@mysten/sui/transactions"
 import { fetchMarketplaceDynamicObject } from "./SUIFunctions.js"
-import { Transaction } from '@mysten/sui/transactions';
 
-import {
-  ConnectButton,
-  useCurrentAccount,
-  useSignAndExecuteTransaction,
-  useSuiClient,
-} from '@mysten/dapp-kit';
+import { useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
 import { useNetworkVariable } from "./networkConfig.js"
 // Controls: WASD + left click
 
-const pinataGatewayToken = process.env.REACT_APP_PINATA_GATEWAY_TOKEN;
+const pinataGatewayToken = process.env.REACT_APP_PINATA_GATEWAY_TOKEN
 const ProductModel = ({ file }) => {
   console.log(file, "file")
-  const modelUrl = `${file}?pinataGatewayToken=${pinataGatewayToken}`;
+  const modelUrl = `${file}?pinataGatewayToken=${pinataGatewayToken}`
   const gltf = useLoader(GLTFLoader, modelUrl)
   console.log(gltf, "gltf")
   return <primitive object={gltf.scene} scale={10} />
 }
 
-function EquidistantPoints({ contract, products }) {
+function EquidistantPoints({ contract, products, buyProduct }) {
   const { setPrice, setText, setDesc } = useSharedState()
   console.log(contract, "Marketplace")
   console.log(products, "products")
@@ -64,7 +51,7 @@ function EquidistantPoints({ contract, products }) {
       {points.map((point, index) => (
         <PresentationControls key={index} snap={true} azimuth={[-Infinity, Infinity]} polar={[0, 0]}>
           <RigidBody type="fixed">
-            <EquidistantMesh position={point} index={index} product={products[index]} contract={contract} clear={clear} />
+            <EquidistantMesh position={point} index={index} product={products[index]} buyProduct={buyProduct} clear={clear} />
           </RigidBody>
         </PresentationControls>
       ))}
@@ -72,7 +59,7 @@ function EquidistantPoints({ contract, products }) {
   )
 }
 
-function EquidistantMesh({ position, index, product, contract, clear }) {
+function EquidistantMesh({ position, index, product, buyProduct, clear }) {
   const ref = useRef()
   const { setPrice, setText, setDesc } = useSharedState()
 
@@ -85,7 +72,6 @@ function EquidistantMesh({ position, index, product, contract, clear }) {
       position={position}
       ref={ref}
       onPointerEnter={(e) => {
-        // setPrice(BigNumber.from(product.price).toString())
         setPrice(product.price)
         setText(product.name)
         setDesc(product.description)
@@ -95,24 +81,17 @@ function EquidistantMesh({ position, index, product, contract, clear }) {
         const productPrice = product.price // Assuming price is in Ether
         console.log("Buying product", index)
         setDesc("Buying...")
-        try {
-          const transaction = await contract.buyProduct(index, {
-            value: productPrice + 1000000000000000, // Add some extra wei to the price to cover gas fees
-          })
-          await transaction.wait()
-        } catch (error) {
-          console.error("Transaction failed", error)
-          // Handle transaction failure
-        }
+        buyProduct(index)
       }}>
       <Suspense fallback={<Html center>Loading model…</Html>}>
-        <ProductModel file={product.fields.ipfs_link}/>
+        <ProductModel file={product.ipfs_link} />
       </Suspense>
     </mesh>
   )
 }
 
 export default function App() {
+  const currentAccount = useCurrentAccount()
   const queryParams = new URLSearchParams(window.location.search)
   const address = queryParams.get("market") || "loading..."
   let hours = 12 + new Date().getHours()
@@ -129,56 +108,40 @@ export default function App() {
 
   const sunPosition = [x, y, z]
 
-  const [account, setAccount] = useState("")
   const [marketContract, setMarketContract] = useState(null)
-  const { user, setUser } = useSharedState()
   const [marketname, setMarketName] = useState("loading...")
-  const [products, setProducts] = useState([]);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [ipfsLink, setIpfsLink] = useState("");
+  const [products, setProducts] = useState([])
   const [marketdesc, setMarketDesc] = useState("loading...")
 
-  const client = useSuiClient();
-  const suiMartPackageId = useNetworkVariable('suiMartPackageId');
-  const {
-    mutate: signAndExecute,
-    isSuccess,
-    isPending,
-  } = useSignAndExecuteTransaction();
+  const client = useSuiClient()
+  const suiMartPackageId = useNetworkVariable("suiMartPackageId")
+  const { mutate: signAndExecute, isSuccess, isPending } = useSignAndExecuteTransaction()
 
-  const marketplaceId = address;
+  const marketplaceId = address
   const buyProduct = async (selectedID) => {
-
     const marketplaceDynamicObject = await client.getObject({
       id: marketplaceId,
       options: { showType: true, showContent: true },
-    });
+    })
 
-    console.log('Marketplace Dynamic Object:', marketplaceDynamicObject);
+    console.log("Marketplace Dynamic Object:", marketplaceDynamicObject)
 
-    const marketplaceValue = marketplaceDynamicObject.data?.content?.fields?.value;
-    console.log('Buy Product');
-    console.log('Marketplace ID:', marketplaceValue);
-    const tx = new Transaction();
+    const marketplaceValue = marketplaceDynamicObject.data?.content?.fields?.value
+    console.log("Buy Product")
+    console.log("Marketplace ID:", marketplaceValue)
 
-    console.log(selectedID, name, description, price, quantity, ipfsLink);
+    console.log("Payment Details: (ALLLLL)", marketplaceValue, selectedID, products[selectedID].price)
+    const tx = new Transaction()
+    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(products[selectedID].price)])
+    tx.setGasBudget(10000000)
+
+    console.log("Payment Details: ", marketplaceValue, selectedID, 1, payment)
     tx.moveCall({
-      arguments: [
-        tx.object(marketplaceValue),
-        tx.pure.u64(selectedID),
-        tx.pure.string(name),
-        tx.pure.string(description),
-        tx.pure.u64(price),
-        tx.pure.u64(quantity),
-        tx.pure.string(ipfsLink),
-      ],
+      arguments: [tx.object(marketplaceValue), tx.pure.u64(selectedID), tx.pure.u64(1), payment],
       target: `${suiMartPackageId}::marketplace::buy_product`,
-    });
+    })
 
-    console.log('Transaction: ', tx);
+    console.log("Transaction: ", tx)
 
     signAndExecute(
       {
@@ -186,43 +149,52 @@ export default function App() {
       },
       {
         onSuccess: async ({ digest }) => {
-          alert('Product Added Successfully!');
+          alert("Product Purchased Successfully!")
           const { effects } = await client.waitForTransaction({
             digest: digest,
             options: {
               showEffects: true,
             },
-          });
+          })
         },
         onError: (error) => {
-          alert('Product Editing Failed!');
-          console.error('Transaction Error:', error);
+          alert("Product Purchase Failed!")
+          console.error("Transaction Error:", error)
         },
       },
-    );
-  };
+    )
+  }
 
   const setMarketplaceFields = async (marketplaceID) => {
-    const res = await fetchMarketplaceDynamicObject(client, marketplaceID);
-    const fProducts = res?.data?.content?.fields?.products;
+    const res = await fetchMarketplaceDynamicObject(client, marketplaceID)
+    const fProducts = res?.data?.content?.fields?.products
 
-    console.log("Marketplace dynamic object response:", res);
-    console.log("Marketplace dynamic object fields:", res?.data?.content?.fields);
+    setMarketName(res?.data?.content?.fields?.name)
+    setMarketDesc(res?.data?.content?.fields?.description)
 
-    console.log("Fetched products:", res.data.content.fields.products);
-    res.data.content.fields.products.forEach((p, i) =>
-      console.log(i, "fields.ipfs_link:", p.fields.ipfs_link)
-    );
-    setProducts(fProducts);
-  };
+    console.log("Fetched products:", res.data.content.fields.products)
+    res.data.content.fields.products.forEach((p, i) => console.log(i, "fields.ipfs_link:", p.fields.ipfs_link))
+
+    let mappedProducts = fProducts.map((p, i) => {
+      return {
+        name: p.fields.name,
+        description: p.fields.description,
+        price: p.fields.price,
+        quantity: p.fields.quantity,
+        ipfs_link: p.fields.ipfs_link,
+      }
+    })
+    setProducts(mappedProducts)
+  }
 
   useEffect(() => {
     if (marketplaceId) {
-      setMarketplaceFields(marketplaceId);
+      setMarketplaceFields(marketplaceId)
     } else {
-      console.error('marketplaceId is not defined');
+      console.error("marketplaceId is not defined")
     }
-  }, [marketplaceId]);
+
+  }, [marketplaceId])
 
   return (
     <>
@@ -255,7 +227,7 @@ export default function App() {
               <Model />
               <Player />
               <Suspense fallback={<Html center>Loading models…</Html>}>
-                <EquidistantPoints products={products} contract={marketContract} />
+                <EquidistantPoints products={products} contract={marketContract} buyProduct={buyProduct} />
               </Suspense>
 
               {/* <Debug/> */}
