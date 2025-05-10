@@ -27,9 +27,12 @@ import {
 import { useNetworkVariable } from "./networkConfig.js"
 // Controls: WASD + left click
 
+const pinataGatewayToken = process.env.REACT_APP_PINATA_GATEWAY_TOKEN;
 const ProductModel = ({ file }) => {
   console.log(file, "file")
-  const gltf = useLoader(GLTFLoader, file)
+  const modelUrl = `${file}?pinataGatewayToken=${pinataGatewayToken}`;
+  const gltf = useLoader(GLTFLoader, modelUrl)
+  console.log(gltf, "gltf")
   return <primitive object={gltf.scene} scale={10} />
 }
 
@@ -82,7 +85,8 @@ function EquidistantMesh({ position, index, product, contract, clear }) {
       position={position}
       ref={ref}
       onPointerEnter={(e) => {
-        setPrice(BigNumber.from(product.price).toString())
+        // setPrice(BigNumber.from(product.price).toString())
+        setPrice(product.price)
         setText(product.name)
         setDesc(product.description)
       }}
@@ -101,7 +105,9 @@ function EquidistantMesh({ position, index, product, contract, clear }) {
           // Handle transaction failure
         }
       }}>
-      <ProductModel file={product.ipfsLink} />
+      <Suspense fallback={<Html center>Loading model…</Html>}>
+        <ProductModel file={product.fields.ipfs_link}/>
+      </Suspense>
     </mesh>
   )
 }
