@@ -68,6 +68,14 @@ And start the Hono server:
 
 ### Marketplace
 
+Inside 3d-marketplace folder, add `.env` file as follows:
+
+```
+REACT_APP_PINATA_GATEWAY_TOKEN=<token>
+```
+
+Then run the project:
+
 ```bash
   cd 3D-Marketplace
   npm i
