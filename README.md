@@ -12,9 +12,24 @@ Create your own 3D Marketplace : https://sui-mart.vercel.app
 
 For local development, change this line: `Dashboard/src/components/Header.tsx#L79`
 
-Sample Marketplace deployed using SuiMart : https://sui-mart-3d.vercel.app/?market=0x0f37aaf19f74777b5d76e561574d73cbc9552c18aec46db4f37b447a5cffae09
+Sample Marketplace deployed using SuiMart:
+
+Sachin AutoVerse:
+https://sui-mart-3d.vercel.app/?market=0x0f37aaf19f74777b5d76e561574d73cbc9552c18aec46db4f37b447a5cffae09
+
+SuiBotanica:
+https://sui-mart-3d.vercel.app/?market=0x3481e766a547f9e850fc97e27393bbdbd1994faed39a960a1479f539f7a08269
+
 
 Note: In case the above links are not working, you might have to disable any ad-blocker. If you use Brave Browser, disable the Brave Shields (located on the right end of the search bar).
+
+## 👾 Usecases
+
+![alt text](images/ta.png)
+
+## 📷 Screenshots
+
+![alt text](images/ss11.png) ![alt text](images/ss1.png)![alt text](images/ss3.png) ![alt text](images/ss4.png) ![alt text](images/ss5.png) ![alt text](images/ss6.png) ![alt text](images/ss7.png) ![alt text](images/ss8.png)![alt text](images/ss9.png)![alt text](images/ss10.png)
 
 
 ## 🚀 Run Locally
@@ -70,11 +85,3 @@ Then run the project:
 ```
 
 For local development, use localhost here: `Dashboard/src/components/Header.tsx#L79`
-
-## 👾 Usecases
-
-![alt text](images/ta.png)
-
-## 📷 Screenshots
-
-![alt text](images/ss1.png)![alt text](images/ss3.png) ![alt text](images/ss4.png) ![alt text](images/ss5.png) ![alt text](images/ss6.png) ![alt text](images/ss7.png) ![alt text](images/ss8.png)![alt text](images/ss9.png)![alt text](images/ss10.png)
