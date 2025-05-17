@@ -187,10 +187,10 @@ function App() {
         <section className="container mx-auto p-6">
           {/* Header with title and a right-aligned button */}
           <div className="flex items-center justify-between mb-8">
-            <h1 className="text-3xl font-bold text-indigo-600 dark:text-indigo-300">
+            <h1 className="text-3xl font-bold text-neutral-900 dark:text-primary-light">
               SuiMart
             </h1>
-            <ConnectButton className="bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition">
+            <ConnectButton className="bg-primary-light text-white px-4 py-2 rounded-lg shadow hover:bg-primary transition">
               Connect Wallet
             </ConnectButton>
           </div>
@@ -199,7 +199,7 @@ function App() {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Register Card */}
             <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg shadow p-6">
-              <h2 className="text-2xl font-semibold text-indigo-600 dark:text-indigo-400 mb-4">
+              <h2 className="text-2xl font-semibold text-neutral-900 dark:text-primary-light mb-4">
                 🏪 Register a Marketplace
               </h2>
               <form
@@ -242,8 +242,8 @@ function App() {
                   />
                 </div>
                 <button
-                  type="submit"
-                  className="w-full flex justify-center items-center px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                    type="submit"
+                  className="w-full flex justify-center items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary transition"
                 >
                   Register
                 </button>
@@ -251,7 +251,7 @@ function App() {
             </div>
         
             {/* Info Card */}
-            <div className="bg-gradient-to-br from-teal-400 to-teal-600 dark:from-teal-600 dark:to-teal-800 text-white rounded-lg shadow p-6">
+            <div className="bg-gradient-to-br from-secondary-light to-secondary dark:from-secondary dark:to-secondary-dark text-neutral-900 rounded-lg shadow p-6">
               <h2 className="text-2xl font-semibold mb-3">
                 🗿 SuiMart
               </h2>

@@ -3,7 +3,7 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber"
 import { Physics, RigidBody } from "@react-three/rapier"
 import { Suspense, useEffect, useRef, useState } from "react"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
-
+import * as THREE from "three";
 import { useSharedState } from "./sharedState.js"
 import { Player } from "./Player.js"
 import { Model } from "./Show2.jsx"
@@ -14,6 +14,8 @@ import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit"
 import { useNetworkVariable } from "./networkConfig.js"
 import { fetchMarketplaceDynamicObject } from "./SUIFunctions.js"
 
+const DESIRED_SIZE = 4.5;
+
 // Pinata
 const pinataGatewayToken = process.env.REACT_APP_PINATA_GATEWAY_TOKEN
 const ProductModel = ({ file }) => {
@@ -21,7 +23,23 @@ const ProductModel = ({ file }) => {
   const modelUrl = `${file}?pinataGatewayToken=${pinataGatewayToken}`
   const gltf = useLoader(GLTFLoader, modelUrl)
   console.log("GLTF Model: ", gltf)
-  return <primitive object={gltf.scene} scale={10} />
+  const ref = useRef();
+
+  useEffect(() => {
+    if (gltf.scene && ref.current) {
+      // Compute bounding box
+      const box = new THREE.Box3().setFromObject(gltf.scene);
+      const size = new THREE.Vector3();
+      box.getSize(size);
+      const maxDim = Math.max(size.x, size.y, size.z);
+      // Calculate scale factor
+      const scale = DESIRED_SIZE / maxDim;
+      ref.current.scale.set(scale, scale, scale);
+      ref.current.position.set(0, 0, 0); // Optionally center
+    }
+  }, [gltf.scene]);
+
+  return <primitive object={gltf.scene} ref={ref} />;
 }
 
 function EquidistantPoints({ products, buyProduct }) {
@@ -82,6 +100,7 @@ function EquidistantMesh({ position, index, product, buyProduct, clear }) {
         setDesc("Buying...")
         buyProduct(index)
       }}>
+      <pointLight position={[0, 2, 0]} intensity={1.2} distance={5} color="white" />
       <Suspense fallback={<Html center>Loading model…</Html>}>
         <ProductModel file={product.ipfs_link} />
       </Suspense>

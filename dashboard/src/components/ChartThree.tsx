@@ -11,7 +11,7 @@ const options: ApexOptions = {
     type: 'donut',
   },
   colors: ['#10B981', '#375E83', '#259AE6', '#FFA70B'],
-  labels: ['Sports', 'Sneakers', 'Formal', 'Casual'],
+  labels: ['Sports', 'SUV', 'Sesan', 'Hatchback'],
   legend: {
     show: true,
     position: 'bottom',
@@ -82,7 +82,7 @@ const ChartThree: React.FC = () => {
           <div className="flex w-full items-center">
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-primary"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
-              <span> Sports Shoes </span>
+              <span> Sports Car </span>
               <span> {state.series[0]}% </span>
             </p>
           </div>
@@ -91,7 +91,7 @@ const ChartThree: React.FC = () => {
           <div className="flex w-full items-center">
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#6577F3]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
-              <span> Sneakers </span>
+              <span> SUVs </span>
               <span> {state.series[1]}% </span>
             </p>
           </div>
@@ -100,7 +100,7 @@ const ChartThree: React.FC = () => {
           <div className="flex w-full items-center">
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#8FD0EF]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
-              <span> Formal Shoes </span>
+              <span> Sedan </span>
               <span> {state.series[2]}% </span>
             </p>
           </div>
@@ -109,7 +109,7 @@ const ChartThree: React.FC = () => {
           <div className="flex w-full items-center">
             <span className="mr-2 block h-3 w-full max-w-3 rounded-full bg-[#0FADCF]"></span>
             <p className="flex w-full justify-between text-sm font-medium text-black dark:text-white">
-              <span> Casual Shoes </span>
+              <span> Hatchback </span>
               <span> {state.series[3]}% </span>
             </p>
           </div>
