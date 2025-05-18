@@ -32,7 +32,7 @@ const EditProducts = (props) => {
     console.log('Marketplace ID:', marketplaceValue);
     const tx = new Transaction();
 
-    console.log(selectedID, name, description, price, quantity, ipfsLink);
+    console.log(selectedID, name, description, price, quantity, tuskyFileId);
     tx.moveCall({
       arguments: [
         tx.object(marketplaceValue),
@@ -41,7 +41,7 @@ const EditProducts = (props) => {
         tx.pure.string(description),
         tx.pure.u64(price),
         tx.pure.u64(quantity),
-        tx.pure.string(ipfsLink),
+        tx.pure.string(tuskyFileId),
       ],
       target: `${suiMartPackageId}::marketplace::edit_product`,
     });
@@ -78,7 +78,7 @@ const EditProducts = (props) => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
-  const [ipfsLink, setIpfsLink] = useState("");
+  const [tuskyFileId, setTuskyFileId] = useState("");
 
   const setMarketplaceFields = async (marketplaceID: string) => {
     const res = await fetchMarketplaceDynamicObject(client, marketplaceID);
@@ -107,7 +107,7 @@ const EditProducts = (props) => {
       setDescription(selected.fields.description || '');
       setPrice(selected.fields.price);
       setQuantity(selected.fields.quantity);
-      setIpfsLink(selected.fields.ipfs_link || '');
+      setTuskyFileId(selected.fields.ipfs_link || '');
     }
     else {
       setSelectedProduct(null);
@@ -198,18 +198,18 @@ const EditProducts = (props) => {
                       <div className="mb-5.5">
                         <label
                           className="mb-3 block text-sm font-medium text-black dark:text-white"
-                          htmlFor="ipfsLink"
+                          htmlFor="tuskyFileId"
                         >
-                          IPFS Link
+                          Tusky File ID
                         </label>
                         <input
                           className="w-full rounded border border-stroke bg-gray py-3 pl-4 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                           type="text"
-                          name="ipfsLink"
-                          id="ipfsLink"
-                          placeholder="IPFS Link"
-                          value={ipfsLink}
-                          onChange={(e) => setIpfsLink(e.target.value)}
+                          name="tuskyFileId"
+                          id="tuskyFileId"
+                          placeholder="Tusky File ID"
+                          value={tuskyFileId}
+                          onChange={(e) => setTuskyFileId(e.target.value)}
                         />
 
                       </div>

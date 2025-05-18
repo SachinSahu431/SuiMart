@@ -5,13 +5,9 @@ import axios from 'axios';
 import { useSignAndExecuteTransaction, useSuiClient } from '@mysten/dapp-kit';
 import { Transaction } from '@mysten/sui/transactions';
 import { useNetworkVariable } from '../networkConfig';
-import { PinataSDK } from 'pinata';
+import { Tusky } from "@tusky-io/ts-sdk/web";
 
-const pinata = new PinataSDK({
-  pinataJwt: import.meta.env.VITE_PINATA_JWT,
-  pinataGateway: import.meta.env.VITE_GATEWAY_URL,
-});
-
+const tusky = new Tusky({ apiKey: import.meta.env.VITE_TUSKY_API_KEY });
 
 const AddProducts = (props) => {
   const client = useSuiClient();
@@ -44,7 +40,7 @@ const AddProducts = (props) => {
         tx.pure.string(description),
         tx.pure.u64(price),
         tx.pure.u64(quantity),
-        tx.pure.string(ipfsLink),
+        tx.pure.string(tuskyFileId), // Use Tusky fileId here
       ],
       target: `${suiMartPackageId}::marketplace::add_product`,
     });
@@ -73,56 +69,49 @@ const AddProducts = (props) => {
     );
   };
 
-  const [glbFile, setGlbFile] = useState(null);
+  const [glbFile, setGlbFile] = useState<File | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
-  const [ipfsLink, setIpfsLink] = useState('');
+  const [tuskyFileId, setTuskyFileId] = useState('');
 
   const handleFileUpload = async (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  setGlbFile(file);
+    setGlbFile(file);
 
-  try {
-    // 1. Get a fresh presigned URL
-    const resp = await fetch(
-      `${import.meta.env.VITE_SERVER_URL}/presigned_url?ts=${Date.now()}`,
-      { cache: 'no-store' }
-    );
-    console.log(resp);
+    try {
+      // 1. Find or create the vault
+      const vaultName = 'sui-hackathon-vault';
+      let vaultId = '';
+      const vaults = await tusky.vault.listAll();
+      const existingVault = vaults.find(v => v.name === vaultName);
+      if (existingVault) {
+        vaultId = existingVault.id;
+      } else {
+        const { id } = await tusky.vault.create(vaultName, { encrypted: false });
+        vaultId = id;
+      }
 
-    if (!resp.ok) {
-      throw new Error(`Server returned ${resp.status}`);
+      // 2. Upload the file to the vault
+      const fileId = await tusky.file.upload(vaultId, file);
+      setTuskyFileId(fileId);
+      fireToast('File uploaded to Tusky!');
+    } catch (error) {
+      console.error('Error uploading file to Tusky:', error);
+      fireToast('Upload failed; see console for details.');
     }
-    const { url } = await resp.json();
-console.log(url);
-    // 2. Upload via Pinata SDK
-    const upload = await pinata
-      .upload
-      .public
-      .file(file)
-      .url(url);
+  };
 
-    // 3. Convert CID → gateway link
-    if (upload.cid) {
-      const link = await pinata.gateways.public.convert(upload.cid);
-      setIpfsLink(link);
-      fireToast('success', 'File uploaded to IPFS!');
-    } else {
-      throw new Error('No CID returned from Pinata');
-    }
-
-  } catch (error) {
-    console.error('Error uploading file to Pinata:', error);
-    fireToast('error', 'Upload failed; see console for details.');
-  }
-};
-
-  const addProduct = async (e) => {
+  const addProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!name.trim() || !description.trim() || price === 0 || quantity === 0) {
+      alert('Please fill all fields: Product Name, Description, Price (>0), and Quantity (>0)');
+      return;
+    }
 
     try {
       addNewProduct();
@@ -197,7 +186,7 @@ console.log(url);
                       id="productPrice"
                       placeholder="Price"
                       value={price}
-                      onChange={(e) => setPrice(e.target.value)}
+                      onChange={(e) => setPrice(Number(e.target.value))}
                     />
                   </div>
 
@@ -215,7 +204,7 @@ console.log(url);
                       id="productQuantity"
                       placeholder="Quantity"
                       value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
+                      onChange={(e) => setQuantity(Number(e.target.value))}
                     />
                   </div>
 
@@ -247,11 +236,10 @@ console.log(url);
                     <input
                       className="w-full rounded border border-stroke bg-gray py-3 pl-4 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
                       type="text"
-                      name="ipfsLink"
-                      id="ipfsLink"
-                      placeholder="IPFS Link"
-                      value={ipfsLink}
-                      // onChange={(e) => setIpfsLink(e.target.value)}
+                      name="tuskyFileId"
+                      id="tuskyFileId"
+                      placeholder="Tusky File ID"
+                      value={tuskyFileId}
                       readOnly
                     />
                   </div>

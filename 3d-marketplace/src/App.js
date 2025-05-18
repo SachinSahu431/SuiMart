@@ -1,9 +1,9 @@
 import { Billboard, Html, KeyboardControls, Loader, PointerLockControls, PresentationControls, Sky, Stars, Text } from "@react-three/drei"
-import { Canvas, useFrame, useLoader } from "@react-three/fiber"
+import { Canvas, useFrame } from "@react-three/fiber"
 import { Physics, RigidBody } from "@react-three/rapier"
 import { Suspense, useEffect, useRef, useState } from "react"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
-import * as THREE from "three";
+import * as THREE from "three"
 import { useSharedState } from "./sharedState.js"
 import { Player } from "./Player.js"
 import { Model } from "./Show2.jsx"
@@ -16,240 +16,260 @@ import { fetchMarketplaceDynamicObject } from "./SUIFunctions.js"
 
 const DESIRED_SIZE = 4.5;
 
-// Pinata
-const pinataGatewayToken = process.env.REACT_APP_PINATA_GATEWAY_TOKEN
+// Fetches a GLTF file as a blob from Tusky API and loads it
 const ProductModel = ({ file }) => {
-  console.log("Pinata File: ", file)
-  const modelUrl = `${file}?pinataGatewayToken=${pinataGatewayToken}`
-  const gltf = useLoader(GLTFLoader, modelUrl)
-  console.log("GLTF Model: ", gltf)
+  const tuskyFileId = file;
+  const [gltf, setGltf] = useState(null);
   const ref = useRef();
 
   useEffect(() => {
-    if (gltf.scene && ref.current) {
-      // Compute bounding box
+    if (!tuskyFileId) return;
+    let isMounted = true;
+
+    async function fetchAndLoad() {
+      try {
+        console.log("[Tusky] Fetching binary stream for file ID:", tuskyFileId);
+        const resp = await fetch(
+          `https://api.tusky.io/files/${tuskyFileId}/data`,
+          {
+            headers: {
+              "Api-Key": process.env.REACT_APP_TUSKY_API_KEY,
+            },
+          }
+        );
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const blob = await resp.blob();
+
+        const url = URL.createObjectURL(blob);
+        const loader = new GLTFLoader();
+        loader.load(
+          url,
+          (gltfObj) => {
+            if (!isMounted) return;
+            setGltf(gltfObj);
+            URL.revokeObjectURL(url);
+            console.log("[GLTFLoader] Model loaded successfully", gltfObj);
+          },
+          undefined,
+          (err) => console.error("[GLTFLoader] Error loading model:", err)
+        );
+      } catch (err) {
+        console.error("[ProductModel] Failed to fetch or load:", err);
+      }
+    }
+
+    fetchAndLoad();
+    return () => { isMounted = false; };
+  }, [tuskyFileId]);
+
+  useEffect(() => {
+    if (gltf?.scene && ref.current) {
       const box = new THREE.Box3().setFromObject(gltf.scene);
       const size = new THREE.Vector3();
       box.getSize(size);
       const maxDim = Math.max(size.x, size.y, size.z);
-      // Calculate scale factor
       const scale = DESIRED_SIZE / maxDim;
-      ref.current.scale.set(scale, scale, scale);
-      ref.current.position.set(0, 0, 0); // Optionally center
+      ref.current.scale.set(scale, scale,scale);
+      ref.current.position.set(0, 0, 0);
     }
-  }, [gltf.scene]);
+  }, [gltf]);
 
+  if (!gltf) return <Html center>Loading model…</Html>;
   return <primitive object={gltf.scene} ref={ref} />;
-}
+};
 
 function EquidistantPoints({ products, buyProduct }) {
-  const { setPrice, setText, setDesc } = useSharedState()
-  console.log(products, "products")
-
-  const points = []
-  const numPoints = products.length
+  const { setPrice, setText, setDesc } = useSharedState();
+  const points = [];
+  const numPoints = products.length;
 
   for (let i = 0; i < numPoints; i++) {
-    const angle = (i / numPoints) * Math.PI * 2
-    const z = Math.cos(angle) * 5
-    const x = Math.sin(angle) * 5
-    const y = 0.4
-    const mul = 3
-    points.push([x * mul, y * mul, z * mul])
+    const angle = (i / numPoints) * Math.PI * 2;
+    const z = Math.cos(angle) * 5;
+    const x = Math.sin(angle) * 5;
+    const y = 0.4;
+    const mul = 3;
+    points.push([x * mul, y * mul, z * mul]);
   }
 
   function clear() {
-    setPrice("")
-    setText("")
-    setDesc("")
+    setPrice("");
+    setText("");
+    setDesc("");
   }
 
   return (
     <>
       {points.map((point, index) => (
-        <PresentationControls key={index} snap={true} azimuth={[-Infinity, Infinity]} polar={[0, 0]}>
+        <PresentationControls
+          key={index}
+          enabled={!document.pointerLockElement}
+          snap={true}
+          azimuth={[-Infinity, Infinity]}
+          polar={[0, 0]}
+        >
           <RigidBody type="fixed">
-            <EquidistantMesh position={point} index={index} product={products[index]} buyProduct={buyProduct} clear={clear} />
+            <EquidistantMesh
+              position={point}
+              index={index}
+              product={products[index]}
+              buyProduct={buyProduct}
+              clear={clear}
+            />
           </RigidBody>
         </PresentationControls>
       ))}
     </>
-  )
+  );
 }
 
 function EquidistantMesh({ position, index, product, buyProduct, clear }) {
-  const ref = useRef()
-  const { setPrice, setText, setDesc } = useSharedState()
+  const ref = useRef();
+  const { setPrice, setText, setDesc } = useSharedState();
 
   useFrame(() => {
-    ref.current.rotation.y += 0.005
-  })
+    ref.current.rotation.y += 0.005;
+  });
 
   return (
     <mesh
       position={position}
       ref={ref}
       onPointerEnter={() => {
-        setPrice(product.price)
-        setText(product.name)
-        setDesc(product.description)
+        setPrice(product.price);
+        setText(product.name);
+        setDesc(product.description);
       }}
       onPointerLeave={() => clear()}
       onClick={async () => {
-        console.log("Clicked on product(index:", index)
-        setDesc("Buying...")
-        buyProduct(index)
-      }}>
+        console.log("Clicked on product(index:", index);
+        setDesc("Buying...");
+        buyProduct(index);
+      }}
+    >
       <pointLight position={[0, 2, 0]} intensity={1.2} distance={5} color="white" />
       <Suspense fallback={<Html center>Loading model…</Html>}>
         <ProductModel file={product.ipfs_link} />
       </Suspense>
     </mesh>
-  )
+  );
 }
 
 export default function App() {
-  const client = useSuiClient() 
-  const suiMartPackageId = useNetworkVariable("suiMartPackageId")
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction()
+  const client = useSuiClient();
+  const suiMartPackageId = useNetworkVariable("suiMartPackageId");
+  const { mutate: signAndExecute } = useSignAndExecuteTransaction();
 
-  const queryParams = new URLSearchParams(window.location.search)
-  const address = queryParams.get("market") || "loading..."
+  const queryParams = new URLSearchParams(window.location.search);
+  const address = queryParams.get("market") || "loading...";
 
-  let hours = 12 + new Date().getHours()
-  // hours = 12
-  let namecolor = "white"
-  if (hours > 18 && hours < 32) namecolor = "green"
-  const inclination = 0 // Set your desired inclination
-  const azimuth = (hours / 24) * 2 * Math.PI // Calculate azimuth based on hours
+  const hours = 12 + new Date().getHours();
+  const namecolor = hours > 18 && hours < 32 ? "green" : "white";
+  const inclination = 0;
+  const azimuth = (hours / 24) * 2 * Math.PI;
+  const sunPosition = [
+    Math.sin(azimuth) * Math.cos(inclination),
+    Math.cos(azimuth) * Math.cos(inclination),
+    Math.sin(inclination),
+  ];
 
-  // Calculate sun position using spherical coordinates
-  const y = Math.cos(azimuth) * Math.cos(inclination)
-  const x = Math.sin(azimuth) * Math.cos(inclination)
-  const z = Math.sin(inclination)
+  const [marketname, setMarketName] = useState("loading...");
+  const [products, setProducts] = useState([]);
+  const [marketdesc, setMarketDesc] = useState("loading...");
 
-  const sunPosition = [x, y, z]
-
-  const [marketname, setMarketName] = useState("loading...")
-  const [products, setProducts] = useState([])
-  const [marketdesc, setMarketDesc] = useState("loading...")
-
-  const marketplaceId = address
+  const marketplaceId = address;
 
   const buyProduct = async (selectedID) => {
     const marketplaceDynamicObject = await client.getObject({
       id: marketplaceId,
       options: { showType: true, showContent: true },
-    })
+    });
 
-    const marketplaceValue = marketplaceDynamicObject.data?.content?.fields?.value
-    const tx = new Transaction()
-    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(products[selectedID].price)])
-    tx.setGasBudget(10000000)
+    const marketplaceValue = marketplaceDynamicObject.data?.content?.fields?.value;
+    const tx = new Transaction();
+    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(products[selectedID].price)]);
+    tx.setGasBudget(10000000);
 
     tx.moveCall({
       arguments: [tx.object(marketplaceValue), tx.pure.u64(selectedID), tx.pure.u64(1), payment],
       target: `${suiMartPackageId}::marketplace::buy_product`,
-    })
-
+    });
 
     signAndExecute(
-      {
-        transaction: tx,
-      },
+      { transaction: tx },
       {
         onSuccess: async ({ digest }) => {
-          alert("Product Purchased Successfully!")
-          const { effects } = await client.waitForTransaction({
-            digest: digest,
-            options: {
-              showEffects: true,
-            },
-          })
+          alert("Product Purchased Successfully!");
+          await client.waitForTransaction({ digest, options: { showEffects: true } });
         },
         onError: (error) => {
-          alert("Product Purchase Failed!")
-          console.error("Transaction Error:", error)
+          alert("Product Purchase Failed!");
+          console.error("Transaction Error:", error);
         },
-      },
-    )
-  }
+      }
+    );
+  };
 
   const setMarketplaceFields = async (marketplaceID) => {
-    const res = await fetchMarketplaceDynamicObject(client, marketplaceID)
-    const fProducts = res?.data?.content?.fields?.products
+    const res = await fetchMarketplaceDynamicObject(client, marketplaceID);
+    const fProducts = res?.data?.content?.fields?.products;
 
-    setMarketName(res?.data?.content?.fields?.name)
-    setMarketDesc(res?.data?.content?.fields?.description)
+    setMarketName(res?.data?.content?.fields?.name);
+    setMarketDesc(res?.data?.content?.fields?.description);
 
-    console.log("Fetched products:", res.data.content.fields.products)
-    res.data.content.fields.products.forEach((p, i) => console.log(i, "fields.ipfs_link:", p.fields.ipfs_link))
-
-    let mappedProducts = fProducts.map((p) => {
-      return {
-        name: p.fields.name,
-        description: p.fields.description,
-        price: p.fields.price,
-        quantity: p.fields.quantity,
-        ipfs_link: p.fields.ipfs_link,
-      }
-    })
-    
-    setProducts(mappedProducts)
-  }
+    const mapped = fProducts.map((p) => ({
+      name: p.fields.name,
+      description: p.fields.description,
+      price: p.fields.price,
+      quantity: p.fields.quantity,
+      ipfs_link: p.fields.ipfs_link,
+    }));
+    setProducts(mapped);
+  };
 
   useEffect(() => {
-    if (marketplaceId) {
-      setMarketplaceFields(marketplaceId)
-    } else {
-      console.error("marketplaceId is not defined")
-    }
-  }, [marketplaceId])
+    if (marketplaceId) setMarketplaceFields(marketplaceId);
+    else console.error("marketplaceId is not defined");
+  }, [marketplaceId]);
 
   return (
-    <>
-      <KeyboardControls
-        map={[
-          { name: "forward", keys: ["ArrowUp", "w", "W"] },
-          { name: "backward", keys: ["ArrowDown", "s", "S"] },
-          { name: "left", keys: ["ArrowLeft", "a", "A"] },
-          { name: "right", keys: ["ArrowRight", "d", "D"] },
-          { name: "jump", keys: ["Space"] },
-        ]}>
-        <Suspense>
-          <Canvas camera={{ fov: 45 }} shadows>
-            <Sky distance={450} sunPosition={sunPosition} inclination={0} azimuth={0.25} />
-            <Stars depth={100} />
+    <KeyboardControls
+      map={[
+        { name: "forward", keys: ["ArrowUp", "w", "W"] },
+        { name: "backward", keys: ["ArrowDown", "s", "S"] },
+        { name: "left", keys: ["ArrowLeft", "a", "A"] },
+        { name: "right", keys: ["ArrowRight", "d", "D"] },
+        { name: "jump", keys: ["Space"] },
+      ]}
+    >
+      <Suspense>
+        <Canvas camera={{ fov: 45 }} shadows>
+          <Sky distance={450} sunPosition={sunPosition} inclination={0} azimuth={0.25} />
+          <Stars depth={100} />
 
-            <Billboard follow={true} lockX={false} lockY={false}>
-              <Text font="./Inter-Bold.woff" position={[0, 5, 0]} fontSize={0.75} color={namecolor}>
-                🏪 {marketname}
-              </Text>
-              <Text font="./Inter-Bold.woff" position={[0, 4, 0]} fontSize={0.25} color="white">
-                {address}
-              </Text>
-              <Text font="./Inter-Regular.woff" position={[0, 3, 0]} fontSize={0.2} color="white">
-                {marketdesc}
-              </Text>
-            </Billboard>
+          <Billboard follow={true} lockX={false} lockY={false}>
+            <Text font="./Inter-Bold.woff" position={[0, 5, 0]} fontSize={0.75} color={namecolor}>🏪 {marketname}</Text>
+            <Text font="./Inter-Bold.woff" position={[0, 4, 0]} fontSize={0.25}> {address} </Text>
+            <Text font="./Inter-Regular.woff" position={[0, 3, 0]} fontSize={0.2}> {marketdesc} </Text>
+          </Billboard>
 
-            <Physics>
-              <Model />
-              <Player />
-              <Suspense fallback={<Html center>Loading models…</Html>}>
-                <EquidistantPoints products={products} buyProduct={buyProduct} />
-              </Suspense>
+          <Physics>
+            <Model />
+            <Player />
+            <Suspense fallback={<Html center>Loading models…</Html>}>
+              <EquidistantPoints products={products} buyProduct={buyProduct} />
+            </Suspense>
 
-              {/* <Debug/> */}
-            </Physics>
+            {/* <Debug/> */}
+          </Physics>
 
-            <PointerLockControls />
-            <ambientLight intensity={0.1} />
-            <pointLight position={[0, 10, 0]} intensity={0.4} />
-          </Canvas>
-        </Suspense>
-        <Loader />
-      </KeyboardControls>
-    </>
-  )
+          <PointerLockControls />
+          <ambientLight intensity={0.1} />
+          <pointLight position={[0, 10, 0]} intensity={0.4} />
+        </Canvas>
+      </Suspense>
+      <Loader />
+    </KeyboardControls>
+  );
 }
