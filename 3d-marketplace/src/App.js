@@ -188,14 +188,19 @@ export default function App() {
 
     const marketplaceValue = marketplaceDynamicObject.data?.content?.fields?.value;
     const tx = new Transaction();
-    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(Number(products[selectedID].price))]);
+    
+    // Convert price to string to avoid BigInt issues
+    const price = products[selectedID].price;
+    const priceStr = typeof price === "bigint" ? price.toString() : String(price);
+    
+    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(priceStr)]);
     tx.setGasBudget(10000000);
 
     tx.moveCall({
       arguments: [
         tx.object(marketplaceValue),
-        tx.pure.u64(Number(selectedID)),
-        tx.pure.u64(1),
+        tx.pure.u64(String(selectedID)),
+        tx.pure.u64("1"),
         payment
       ],
       target: `${suiMartPackageId}::marketplace::buy_product`,

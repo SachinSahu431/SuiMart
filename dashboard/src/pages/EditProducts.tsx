@@ -36,11 +36,11 @@ const EditProducts = (props) => {
     tx.moveCall({
       arguments: [
         tx.object(marketplaceValue),
-        tx.pure.u64(selectedID),
+        tx.pure.u64(String(selectedID)),
         tx.pure.string(name),
         tx.pure.string(description),
-        tx.pure.u64(price),
-        tx.pure.u64(quantity),
+        tx.pure.u64(String(price)),
+        tx.pure.u64(String(quantity)),
         tx.pure.string(tuskyFileId),
       ],
       target: `${suiMartPackageId}::marketplace::edit_product`,

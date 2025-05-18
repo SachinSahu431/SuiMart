@@ -38,8 +38,8 @@ const AddProducts = (props) => {
         tx.object(marketplaceValue),
         tx.pure.string(name),
         tx.pure.string(description),
-        tx.pure.u64(price),
-        tx.pure.u64(quantity),
+        tx.pure.u64(String(price)),
+        tx.pure.u64(String(quantity)),
         tx.pure.string(tuskyFileId), // Use Tusky fileId here
       ],
       target: `${suiMartPackageId}::marketplace::add_product`,
