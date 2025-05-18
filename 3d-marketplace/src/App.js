@@ -191,16 +191,33 @@ export default function App() {
     
     // Convert price to string to avoid BigInt issues
     const price = products[selectedID].price;
+    console.log("[buyProduct] price value:", price, "type:", typeof price);
     const priceStr = typeof price === "bigint" ? price.toString() : String(price);
     
-    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(priceStr)]);
+    const payment = tx.splitCoins(tx.gas, [
+      (() => {
+        console.log("[buyProduct] priceStr:", priceStr, "type:", typeof priceStr);
+        return tx.pure.u64(priceStr);
+      })()
+    ]);
+    
+    console.log("[buyProduct] selectedID value:", selectedID, "type:", typeof selectedID);
+    console.log("[buyProduct] payment:", payment);
     tx.setGasBudget(10000000);
 
     tx.moveCall({
       arguments: [
         tx.object(marketplaceValue),
-        tx.pure.u64(String(selectedID)),
-        tx.pure.u64("1"),
+        (() => {
+          const val = String(selectedID);
+          console.log("[buyProduct] tx.pure.u64(selectedID):", val, "type:", typeof val);
+          return tx.pure.u64(val);
+        })(),
+        (() => {
+          const one = "1";
+          console.log("[buyProduct] tx.pure.u64(1):", one, "type:", typeof one);
+          return tx.pure.u64(one);
+        })(),
         payment
       ],
       target: `${suiMartPackageId}::marketplace::buy_product`,
@@ -222,19 +239,30 @@ export default function App() {
   };
 
   const setMarketplaceFields = async (marketplaceID) => {
+    console.log("[setMarketplaceFields] called with marketplaceID:", marketplaceID, "type:", typeof marketplaceID);
     const res = await fetchMarketplaceDynamicObject(client, marketplaceID);
+    console.log("[setMarketplaceFields] fetchMarketplaceDynamicObject result:", res);
     const fProducts = res?.data?.content?.fields?.products;
+    console.log("[setMarketplaceFields] fProducts:", fProducts, Array.isArray(fProducts), fProducts && fProducts.length);
 
     setMarketName(res?.data?.content?.fields?.name);
     setMarketDesc(res?.data?.content?.fields?.description);
 
-    const mapped = fProducts.map((p) => ({
-      name: p.fields.name,
-      description: p.fields.description,
-      price: p.fields.price,
-      quantity: p.fields.quantity,
-      ipfs_link: p.fields.ipfs_link,
-    }));
+    const mapped = fProducts.map((p, idx) => {
+      console.log(`[setMarketplaceFields] Product #${idx}:`, p);
+      const price = p.fields.price;
+      const quantity = p.fields.quantity;
+      console.log(`[setMarketplaceFields] Product #${idx} price:`, price, "type:", typeof price);
+      console.log(`[setMarketplaceFields] Product #${idx} quantity:`, quantity, "type:", typeof quantity);
+      return {
+        name: p.fields.name,
+        description: p.fields.description,
+        price: price,
+        quantity: quantity,
+        ipfs_link: p.fields.ipfs_link,
+      };
+    });
+    console.log("[setMarketplaceFields] mapped products:", mapped);
     setProducts(mapped);
   };
 
