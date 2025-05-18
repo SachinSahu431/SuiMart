@@ -188,11 +188,16 @@ export default function App() {
 
     const marketplaceValue = marketplaceDynamicObject.data?.content?.fields?.value;
     const tx = new Transaction();
-    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(products[selectedID].price)]);
+    const payment = tx.splitCoins(tx.gas, [tx.pure.u64(Number(products[selectedID].price))]);
     tx.setGasBudget(10000000);
 
     tx.moveCall({
-      arguments: [tx.object(marketplaceValue), tx.pure.u64(selectedID), tx.pure.u64(1), payment],
+      arguments: [
+        tx.object(marketplaceValue),
+        tx.pure.u64(Number(selectedID)),
+        tx.pure.u64(1),
+        payment
+      ],
       target: `${suiMartPackageId}::marketplace::buy_product`,
     });
 
