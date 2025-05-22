@@ -1,87 +1,90 @@
+# SuiMart
 ![alt text](images/banner.png)
 
-SuiMart revolutionizes e-commerce by democratizing 3D model storefronts. Whether you're a florist or a store owner, easily showcase and sell products – from cars to fashion to plants – with personalized contracts on the Sui Blockchain. Join us in reshaping the future of online commerce, where every business finds its unique space – SuiMart, where innovation meets market accessibility.
+## 🚀 About
 
-Use SuiMart no-code tool to deploy your 3D marketplace on Sui with just a click. Go global with your 3D virtual showroom with no cost at all. SuiMart focuses on ease of use and customization ability for users. Generate the future ready 3D marketplaces for your customers, as they deserve it.
+**SuiMart** revolutionizes e-commerce by democratizing 3D model storefronts on the **Sui Blockchain**. With our no-code tool, anyone—from artisans to retailers—can deploy a fully interactive 3D marketplace in a single click, complete with on-chain ownership and Walrus-hosted assets.
 
- ![alt text](images/cs.png)
-
-## 🏪 Use SuiMart  
-
-Create your own 3D Marketplace : https://sui-mart.vercel.app
-
-For local development, change this line: `Dashboard/src/components/Header.tsx#L79`
-
-Sample Marketplace deployed using SuiMart:
-
-Sachin AutoVerse:
-https://sui-mart-3d.vercel.app/?market=0x0f37aaf19f74777b5d76e561574d73cbc9552c18aec46db4f37b447a5cffae09
-
-SuiBotanica:
-https://sui-mart-3d.vercel.app/?market=0x3481e766a547f9e850fc97e27393bbdbd1994faed39a960a1479f539f7a08269
-
-
-Note: In case the above links are not working, you might have to disable any ad-blocker. If you use Brave Browser, disable the Brave Shields (located on the right end of the search bar).
+Key highlights:
+- 🛠️ **No-Code Deployment:** Spin up your own 3D MarketVerse without writing a single line of code.
+- ⚡ **Sui-Native Contracts:** Each seller gets a personalized Move-based `Marketplace` contract for true on-chain ownership.
+- 🌐 **Global Reach:** Zero deployment cost & gas-sponsorship for the first 100 transactions.
+- 🤖 **AI Concierge (β):** Ask questions about products and receive instant responses.
 
 ## 👾 Usecases
 
 ![alt text](images/ta.png)
+![alt text](images/image.png)
+
+## 📸 Demo & Preview
+
+- Demo Car Showroom `AutoVerse`: [AutoVerse Store](https://sui-mart-3d.vercel.app/?market=0x0f37aaf19f74777b5d76e561574d73cbc9552c18aec46db4f37b447a5cffae09)
+- Demo Plant Marketplace `Botanica`: [Botanica Showroom](https://sui-mart-3d.vercel.app/?market=0x3481e766a547f9e850fc97e27393bbdbd1994faed39a960a1479f539f7a08269)
+- Seller Page (for making new marketplace): [https://sui-mart.vercel.app](https://sui-mart.vercel.app)
+
+Note: In case the above links are not working, you might have to disable any ad-blocker. If you use Brave Browser, disable the Brave Shields (located on the right end of the search bar).
 
 ## 📷 Screenshots
 
 ![alt text](images/ss11.png) ![alt text](images/ss1.png)![alt text](images/ss3.png) ![alt text](images/ss4.png) ![alt text](images/ss5.png) ![alt text](images/ss6.png) ![alt text](images/ss7.png) ![alt text](images/ss8.png)![alt text](images/ss9.png)![alt text](images/ss10.png)
 
 
-## 🚀 Run Locally
+## 🏗️ Features
 
-### Dashboard - Vite Client
+- **Factory Contract:** Deploys a unique `Marketplace` Move module per seller.
+- **Seller Dashboard:** React + Vite-based UI for product uploads, editing, and analytics.
+- **Immersive 3D MarketVerse:** Three.js-powered showroom with day/night cycle.
+- **Secure Transactions:** One-click buy with Sui Pay integration; purchasers receive an NFT as proof of ownership.
 
-Create an environment file `.env.local` and provide it with Pinata JWT details [here](https://docs.pinata.cloud/frameworks/react#start-up-react-project).
+
+## 📦 Tech Stack
+
+| Component       | Technology         |
+|-----------------|--------------------|
+| Frontend        | React, Three.js, Vite |
+| Backend         | TypeScript |
+| Blockchain      | Sui Move, sui.js SDK |
+| Storage         | Tusky (Walrus)      |
 
 
-```
-VITE_SERVER_URL=http://localhost:8787     # your backend endpoint for pinata server
-VITE_GATEWAY_URL=<mydomain>.mypinata.cloud
-```
+## 🛠️ Getting Started
 
-Run the Vite client:
+### Prerequisites
+- Node.js ≥ 16.x
+- Yarn or npm
+- Sui wallet (Sui Pay, Martian, or Ethos)
 
+### Clone & Install
 ```bash
-  cd Dashboard
-  npm i
-  npm run dev
+git clone https://github.com/SachinSahu431/SuiMart.git
+cd SuiMart
 ```
 
-### Dashboard - Pinata Server
-
-Create `.dev.vars` and insert these values:
-
-```
-PINATA_JWT=<your_jwt_token>
-GATEWAY_URL=<mydomain>.mypinata.cloud
-```
-
-And start the Hono server:
+#### Seller Dashboard (Client)
 ```bash
-  cd pinata-server
-  npm i
-  npm run dev
+cd Dashboard
+npm install
+# Create .env with Tusky API Key
+# VITE_TUSKY_API_KEY=<your_key>
+npm run dev
 ```
 
-### Marketplace
+For local development, change this line: Dashboard/src/components/Header.tsx#L79
 
-Inside 3d-marketplace folder, add `.env` file as follows:
-
-```
-REACT_APP_PINATA_GATEWAY_TOKEN=<token>
-```
-
-Then run the project:
-
+#### 3D Marketplace
 ```bash
-  cd 3D-Marketplace
-  npm i
-  npm run start
+cd 3d-marketplace
+npm install
+# Create .env with:
+# REACT_APP_TUSKY_API_KEY=<your_token>
+npm run start
 ```
 
-For local development, use localhost here: `Dashboard/src/components/Header.tsx#L79`
+
+## 📄 Contract Details
+
+SuiMart PackageId:
+0x69c44588e703cc6022611b99949a39f87210b5e2299ecff90645dc0f34074166
+
+https://suiscan.xyz/testnet/object/0x69c44588e703cc6022611b99949a39f87210b5e2299ecff90645dc0f34074166/contracts
+
