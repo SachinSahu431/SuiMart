@@ -8,6 +8,7 @@
 Key highlights:
 - 🛠️ **No-Code Deployment:** Spin up your own 3D MarketVerse without writing a single line of code.
 - ⚡ **Sui-Native Contracts:** Each seller gets a personalized Move-based `Marketplace` contract for true on-chain ownership.
+- **Tusky SDK Integration:** Built on Walrus (Tusky) SDK for streamlined on-chain event streaming and transaction management.
 - 🌐 **Global Reach:** Zero deployment cost & gas-sponsorship for the first 100 transactions.
 - 🤖 **AI Concierge (β):** Ask questions about products and receive instant responses.
 
@@ -29,6 +30,7 @@ Note: In case the above links are not working, you might have to disable any ad-
 ## 📷 Screenshots
 
 ![alt text](images/ss11.png) ![alt text](images/ss1.png)![alt text](images/ss3.png) ![alt text](images/ss4.png) ![alt text](images/ss5.png) ![alt text](images/ss6.png) ![alt text](images/ss7.png) ![alt text](images/ss8.png)![alt text](images/ss9.png)![alt text](images/ss10.png)
+![tusky](images/tusky.png)
 
 
 ## 🏗️ Features
