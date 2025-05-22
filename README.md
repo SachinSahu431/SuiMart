@@ -18,8 +18,10 @@ Key highlights:
 
 ## 📸 Demo & Preview
 
-- Demo Car Showroom `AutoVerse`: [AutoVerse Store](https://sui-mart-3d.vercel.app/?market=0x0f37aaf19f74777b5d76e561574d73cbc9552c18aec46db4f37b447a5cffae09)
+- Demo Car Showroom `MetaVroom`: [MetaVroom Store](https://sui-mart-3d.vercel.app/?market=0x6fe03909c447be13f471bb354d1c1516a0e4bf34ead0f0ca53ac797cce1d1da5)
+  - (seller: 0x2eaec6997b466980ed3b9d6ae4999222d2052c2e823019843b52de8fd0f6dae7)
 - Demo Plant Marketplace `Botanica`: [Botanica Showroom](https://sui-mart-3d.vercel.app/?market=0x3481e766a547f9e850fc97e27393bbdbd1994faed39a960a1479f539f7a08269)
+  - (seller: 0x1f8c67ce6e03a186f5d205417f4b5c9ef90feb5fb496a71ca33131091950f3a6)
 - Seller Page (for making new marketplace): [https://sui-mart.vercel.app](https://sui-mart.vercel.app)
 
 Note: In case the above links are not working, you might have to disable any ad-blocker. If you use Brave Browser, disable the Brave Shields (located on the right end of the search bar).
