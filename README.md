@@ -90,3 +90,8 @@ SuiMart PackageId:
 
 https://suiscan.xyz/testnet/object/0x69c44588e703cc6022611b99949a39f87210b5e2299ecff90645dc0f34074166/contracts
 
+
+## 📄 High-level Architecture Details
+
+![alt text](images/image-1.png)
+![alt text](images/image-2.png)
